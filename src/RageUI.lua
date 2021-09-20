@@ -35,6 +35,12 @@ RageUI.PoolMenus = RageUI.PoolMenus or {
 RageUI.Settings = {
     Debug = false,
     Controls = {
+        MouseScroll = {
+            Enabled = true,
+            Scrolled = false,
+            { 0, 242 }, -- Scroll down
+            { 0, 241 }, -- Scroll up
+        },
         Up = {
             Enabled = true,
             Active = false,
@@ -43,9 +49,6 @@ RageUI.Settings = {
                 { 0, 172 },
                 { 1, 172 },
                 { 2, 172 },
-                { 0, 241 },
-                { 1, 241 },
-                { 2, 241 },
             },
         },
         Down = {
@@ -56,9 +59,6 @@ RageUI.Settings = {
                 { 0, 173 },
                 { 1, 173 },
                 { 2, 173 },
-                { 0, 242 },
-                { 1, 242 },
-                { 2, 242 },
             },
         },
         Left = {
@@ -149,8 +149,6 @@ RageUI.Settings = {
                 { 0, 190 }, -- Right
                 { 0, 202 }, -- Back
                 { 0, 217 }, -- Select
-                { 0, 242 }, -- Scroll down
-                { 0, 241 }, -- Scroll up
                 { 0, 239 }, -- Cursor X
                 { 0, 240 }, -- Cursor Y
                 { 0, 31 }, -- Move Up and Down
@@ -300,6 +298,30 @@ function RageUI.CloseAll()
     ResetScriptGfxAlign()
 end
 
+function RageUI.SetScaleformParams(scaleform, data)
+    data = data or {}
+    for k, v in pairs(data) do
+        PushScaleformMovieFunction(scaleform, v.name)
+        if v.param then
+            for _, par in pairs(v.param) do
+                if math.type(par) == "integer" then
+                    PushScaleformMovieFunctionParameterInt(par)
+                elseif type(par) == "boolean" then
+                    PushScaleformMovieFunctionParameterBool(par)
+                elseif math.type(par) == "float" then
+                    PushScaleformMovieFunctionParameterFloat(par)
+                elseif type(par) == "string" then
+                    PushScaleformMovieFunctionParameterString(par)
+                end
+            end
+        end
+        if v.func then
+            v.func()
+        end
+        PopScaleformMovieFunctionVoid()
+    end
+end
+
 function RageUI.Banner()
     local CurrentMenu = RageUI.CurrentMenu
     if (CurrentMenu.Display.Header) then
@@ -316,6 +338,18 @@ function RageUI.Banner()
             end
         else
             Graphics.Rectangle(CurrentMenu.X, CurrentMenu.Y, RageUI.Settings.Items.Title.Background.Width + CurrentMenu.WidthOffset, RageUI.Settings.Items.Title.Background.Height, CurrentMenu.Rectangle.R, CurrentMenu.Rectangle.G, CurrentMenu.Rectangle.B, CurrentMenu.Rectangle.A)
+        end
+        if (CurrentMenu.Display.Glare) then
+            local ScaleformMovie = RequestScaleformMovie("MP_MENU_GLARE")
+            local Glarewidth = RageUI.Settings.Items.Title.Background.Width + 1
+            local Glareheight = RageUI.Settings.Items.Title.Background.Height + 1.75
+            local GlareX = CurrentMenu.X / 1920 + (CurrentMenu.SafeZoneSize.X / (64.399 - (CurrentMenu.WidthOffset * 0.065731)))
+            local GlareY = CurrentMenu.Y / 1080 + CurrentMenu.SafeZoneSize.Y / 33.195020746888
+            GlareY = GlareY + 0.00575
+            RageUI.SetScaleformParams(ScaleformMovie, {
+                { name = "SET_DATA_SLOT", param = { GetGameplayCamRelativeHeading() } }
+            })
+            DrawScaleformMovie(ScaleformMovie, GlareX, GlareY, Glarewidth / 430, Glareheight / 100, 255, 255, 255, 255, 0)
         end
         Graphics.Text(CurrentMenu.Title, CurrentMenu.X + RageUI.Settings.Items.Title.Text.X + (CurrentMenu.WidthOffset / 2), CurrentMenu.Y + RageUI.Settings.Items.Title.Text.Y, CurrentMenu.TitleFont, CurrentMenu.TitleScale, 255, 255, 255, 255, 1)
         RageUI.ItemOffset = RageUI.ItemOffset + RageUI.Settings.Items.Title.Background.Height

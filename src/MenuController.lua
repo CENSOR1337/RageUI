@@ -186,7 +186,34 @@ function RageUI.Controls()
 						EnableControlAction(Controls.Enabled.Keyboard[Index][1], Controls.Enabled.Keyboard[Index][2], true)
 					end
 				end
+				
 
+				if Controls.MouseScroll.Enabled then
+					for Index = 1, #Controls.MouseScroll do
+						if not Controls.MouseScroll.Scrolled then
+							for Index = 1, #Controls.MouseScroll do
+								if IsDisabledControlJustPressed(Controls.MouseScroll[Index][1], Controls.MouseScroll[Index][2]) then
+									if Controls.MouseScroll[Index][2] == 241 then
+										Controls.MouseScroll.Scrolled = true
+										Citizen.CreateThread(function()
+											RageUI.GoUp(Options)
+											Controls.MouseScroll.Scrolled = false
+										end)
+									elseif Controls.MouseScroll[Index][2] == 242 then
+										Controls.MouseScroll.Scrolled = true
+										Citizen.CreateThread(function()
+											RageUI.GoDown(Options)
+											Controls.MouseScroll.Scrolled = false
+										end)
+									end
+									
+								end
+							end
+						end
+					end
+				end
+				
+					
 				if Controls.Up.Enabled then
 					for Index = 1, #Controls.Up.Keys do
 						if not Controls.Up.Pressed then
